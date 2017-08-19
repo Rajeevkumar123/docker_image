@@ -1,14 +1,19 @@
-FROM ubuntu
-MAINTAINER Manivannan.C
+FROM ubuntu:12.04
 
-RUN apt-get install -y software-properties-common python
-RUN add-apt-repository ppa:chris-lea/node.js
-RUN echo "deb http://us.archive.ubuntu.com/ubuntu/ precise universe" >> /etc/apt/sources.list
 RUN apt-get update
-RUN apt-get install -y nodejs
-#RUN apt-get install -y nodejs=0.6.12~dfsg1-1ubuntu1
-RUN mkdir /var/www
+RUN apt-get install -y apache2 php5 libapache2-mod-php5 unzip
 
-ADD app.js /var/www/app.js
+ENV APACHE_RUN_USER www-data
+ENV APACHE_RUN_GROUP www-data
+ENV APACHE_LOG_DIR /var/log/apache2
 
-CMD ["/usr/bin/node", "/var/www/app.js"] 
+EXPOSE 80
+
+ADD http://icecoder.net/download-zip?version=3.0beta /var/www/icecoder.zip
+
+RUN cd /var/www && unzip -o  icecoder.zip 
+RUN cd /var/www && mv ICEco* icecoder
+RUN chown www-data -R /var/www/icecoder/lib /var/www/icecoder/backups /var/www/icecoder/test 
+RUN mkdir /var/www/projects && chown -R www-data /var/www/projects && chmod g+s /var/www/projects
+
+CMD ["/usr/sbin/apache2", "-D", "FOREGROUND"] 
